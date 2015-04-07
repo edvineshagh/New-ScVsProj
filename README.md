@@ -9,7 +9,7 @@ This PowerShell script automates the creation of initial  Visual Studio (VS) pro
 3.  Update target VS project file (name, assembly, namespace, content, references) 
 4.  Copy contents of Sitecore/Data folder into VS/App_Data folder
 5.  Update sc.variable for "dataFolder" in web.config to /App_Data.  
-6.  Add empty readme.txt file every folder that does not have any file or folders.  This is done to insure the folders persists when they are deployed to Azure platform.
+6.  Add empty readme.txt file for every folder that does not have any file or folders.  This is done to insure the folders persists when they are deployed to Azure platform.
 
  
 # Usage #
