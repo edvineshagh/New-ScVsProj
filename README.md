@@ -13,7 +13,7 @@ This PowerShell script automates the creation of initial  Visual Studio (VS) pro
 
  
 # Usage #
-Below outlines the script usage and parameters.  Note that after running the script to create the Visual Studio Project, you must add the license.xml file into the data folder (e.g. App_Data).  
+Below outlines the script usage and parameters.  If no parameters are specified, then the script shall prompt the user for the required *-source* parameter and then begin execution.  Note that after running the script, you must add the license.xml file into the data folder (e.g. App_Data).  
 
 
     .\New-VsScProj.ps1 -source <p1>              `
@@ -27,7 +27,7 @@ Below outlines the script usage and parameters.  Note that after running the scr
 
 **-vsTargetFolder** parameter is *optional*. It is target folder for the VS project folder.  If omitted, then the current working folder is used for the target folder.  Note that the PowerShell script enforces the following conventions: *1)* VS project file (.csproj) will match the target folder name, *2)* If no target folder is specified, then the vsTemplateFolder name is used for the target folder name (excluding the word template found in the vsTemplateFolder), *3)* if no target folder is specified and there already exists a target folder, then a new folder with a numeric suffix is created.  For example, if WebFormsMvc folder already exists, then WebFormsMVC1 is created.
 
-**-overwriteExistingFiles** parameter is optional (default false).  If target folder is specified via -vsTargetFolder and if the target already exists, then this flag is responsible for updating existing files and project.  By existing files are not replaced.
+**-overwriteExistingFiles** parameter is optional (default false).  If target folder is specified via -vsTargetFolder and if the target already exists, then this flag is responsible for updating existing files and project.  If set to $true, then the existing files are replaced.
 
 # Examples #
     New-ScProj -source 'c:\Sitecore8.zip' 
@@ -44,3 +44,4 @@ Below outlines the script usage and parameters.  Note that after running the scr
                -vsTargetFolder "c:\temp\sc8"    `
                -overwriteExistingFiles $true
 
+As mentioned earlier, you need to add Sitecore license.xml into /App_Data folder within Visual Studio.  You can avoid this manual step by adding the license.xml file into the template source (as specified in -vsTEmplateFolder parameter) so that it is automatically added for you.

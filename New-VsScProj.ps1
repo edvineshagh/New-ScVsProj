@@ -11,7 +11,10 @@
 #          files quickly and easily. 
 #
 # Usage:   
-#   New-VsScProj -source <p1> -vsTemplateFolder <p2> -$vsTargetFolder <p3> -overwriteExistingFiles $false
+#   New-VsScProj -source <p1>           `
+#                -vsTemplateFolder <p2> `
+#                -vsTargetFolder <p3>   `
+#                -overwriteExistingFiles $false
 #
 #       -soruce (required):
 #            Sitecore root folder that contains Data, Website, and 
@@ -65,7 +68,7 @@ $ErrorActionPreference = "Stop"
 # programmer note:
 #     declaring [xml] $xml=get-content(...) as shown here:
 #     https://www.simple-talk.com/sysadmin/powershell/powershell-data-basics-xml
-#     does not perserve sitecore variables in web.config when $xml.save() 
+#     does not preserve sitecore variables in web.config when $xml.save() 
 #     method is called.  Therefore, .NET object is used to load and save:
 #       $xml = new-object System.Xml.XmlDcoument
 #        $xml.load(...)
@@ -99,7 +102,7 @@ if (! (Test-Path -Path Variable:VS_TEMPLATE_REGEX)) {
 
     #####################################    
     # The following variable defines the
-    # empty filename to be added to 
+    # empty file name to be added to 
     # empty folders
     #
     Set-Variable EMPTY_FILENAME_STR -Option Constant -Value "readme.txt"
@@ -112,7 +115,7 @@ if (! (Test-Path -Path Variable:VS_TEMPLATE_REGEX)) {
         
     #####################################
     # File extensions used to determine
-    # the XML node name added ot VS
+    # the XML node name added to VS
     # project file
     #
     Set-Variable FILE_EXT_TO_VS_NODE_MAP -Option Constant -Value @{
@@ -202,7 +205,7 @@ function Get-VsProjectFilePath ($folder) {
 #
 #           Otherwise $true is return after performing the following actions:
 #              1) $srcFolder is copied to $dstFolder and 
-#              2) the destination project filename, project namespace, 
+#              2) the destination project file name, project namespace, 
 #                 and project assembly are modified to match the 
 #                 destination folder name
 #
@@ -313,7 +316,7 @@ function Copy-VsTemplateFolder ($srcFolder, $dstFolder) {
 #                                 then "no" file is excluded
 #
 #         $vsLogicalFolder - target folder within visual studio where files
-#                            should be added (.e.g. /bin, /app_data, etc)
+#                            should be added (e.g. /bin, /app_data, etc)
 #
 #         $overwriteExistingFiles - If true, then files are overwritten during
 #                            copy process; otherwise, existing files are not
@@ -383,8 +386,8 @@ function Copy-FilesIntoProject (
     
     $itemGroupChildNodes | 
         Where-Object { 
-             $_.GetAttribute("Include").Length -gt 0                                  `
-             -and $FILE_EXT_TO_VS_NODE_MAP.Values -contains $_.Get_LocalName()        `
+            $_.GetAttribute("Include").Length -gt 0                           `
+            -and $FILE_EXT_TO_VS_NODE_MAP.Values -contains $_.Get_LocalName() `
         } |
         ForEach-Object {
             $local:contentPath = $_.GetAttribute("Include").ToLower()
@@ -676,67 +679,28 @@ function Add-TypeScriptSupportToVs($vsProjFilePath) {
             -NodePath "/Project/PropertyGroup" `
             -NodeSeparatorCharacter "/" `
             )
-	
+    
     # PropertyGroup.TypeScriptToolsVersion
     $propertyGroup.AppendChild( 
-		$xml.CreateElement("TypeScriptToolsVersion", 
+        $xml.CreateElement("TypeScriptToolsVersion", 
         $xml.Project.xmlns)).innerText = $TYPE_SCRIPT_VERSION
 
-	#PropertyGroup.TypeScriptModuleKind
+    #PropertyGroup.TypeScriptModuleKind
     $propertyGroup.AppendChild( 
-		$xml.CreateElement("TypeScriptModuleKind", 
+        $xml.CreateElement("TypeScriptModuleKind", 
         $xml.Project.xmlns)).innerText = $TYPE_SCRIPT_MODULE
-				
-	<#	
-    $local:propertyGroups = (
-        Get-XmlNodes -XmlDocument $xml `
-            -NodePath "/Project/PropertyGroup[@Condition]" `
-            -NodeSeparatorCharacter "/" `
-            )
 
-    # Add property group to 
-    @("Debug", "Release") |
-        ForEach {
-        
-            $local:targetEnv = $_
-            
-            $local:propertyGroup = 
-                $xml.CreateElement(
-                "PropertyGroup", $xml.Project.xmlns)
-            
-            $propertyGroup.SetAttribute("Condition", 
-                "'`$(Configuration)' == '$targetEnv'") | Out-Null
-            
-             # PropertyGroup.TypeScriptToolsVersion
-            $node = $xml.CreateElement("TypeScriptToolsVersion", 
-                $xml.Project.xmlns)
-                
-            $node.innerText=$TYPE_SCRIPT_VERSION
-            
-            $propertyGroup.AppendChild($node) | out-null
 
-            #PropertyGroup.TypeScriptModuleKind
-            $node = $xml.CreateElement("TypeScriptModuleKind", 
-                 $xml.Project.xmlns)
-                
-            $node.innerText=$TYPE_SCRIPT_MODULE
-            $propertyGroup.AppendChild($node) | Out-Null
-            
-            $xml.Project.InsertBefore($propertyGroup, 
-                ($propertyGroups | Select -First 1) ) | Out-Null
-        }
- 	#>
-	
     #####################################
     # <Import Project 2
-	# Location of the Import is important, 
-	# which must come after specifying
-	# the TypeScript Module compile type.
-	# Otherwise, we'll get the this error
-	#    cannot compile external modules unless the '--module' flag is provided
-	#
-	# reference: http://stackoverflow.com/questions/25147727/typescript-external-module
-	#
+    # Location of the Import is important, 
+    # which must come after specifying
+    # the TypeScript Module compile type.
+    # Otherwise, we'll get the this error
+    #    cannot compile external modules unless the '--module' flag is provided
+    #
+    # reference: http://stackoverflow.com/questions/25147727/typescript-external-module
+    #
     $node = $xml.CreateElement("Import", $xml.Project.xmlns)
     
     $node.SetAttribute("Project", "`$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v`$(VisualStudioVersion)\TypeScript\Microsoft.TypeScript.targets")
@@ -745,7 +709,7 @@ function Add-TypeScriptSupportToVs($vsProjFilePath) {
     
     $xml.Project.InsertAfter($node, $propertyGroup) | Out-Null
     
-    		
+            
     #####################################
     # Save XML
     #
@@ -758,9 +722,9 @@ function Add-TypeScriptSupportToVs($vsProjFilePath) {
 # Add-EmptyFolderIntoProject()
 #
 # Purpose: Add an empty folder to the file system and visual studio project.
-#          The intende of this method is to add a folder that contains
+#          The intend of this method is to add a folder that contains
 #          a readme.txt file, so that the folder persists on Azure website.
-#          In absence of any files, empty files are deleted from Azure website.
+#          In absence of any files, empty folders are deleted from Azure website.
 #
 # Param:   $vsTargetProjFilePath - Visual studio project file (*.csproj) where
 #               a folder must be added to.
@@ -769,9 +733,9 @@ function Add-TypeScriptSupportToVs($vsProjFilePath) {
 #               For example: /temp
 #
 # Result:  If the global flag $ADD_EMPTY_FILE_TO_EMPTY_FOLDER is set to $true, 
-#           then an empty readme.txt file is added into the folder and the 
+#          then an empty readme.txt file is added into the folder and the 
 #          respective file is added into visual studio project.  However, if the
-#           flag is $false, then only the empty folder is added to the VS project
+#          flag is $false, then only the empty folder is added to the VS project
 #
 function Add-EmptyFolderIntoProject(
             $vsTargetProjFilePath, 
@@ -931,12 +895,12 @@ Function Update-CS-files($vsProjFile) {
     # Namespace to match assembly and
     # generic route
     Update-FileContent -file "$rootProjFolder/App_Start/RouteConfig.cs" `
-                       -matchPattern $namespacePattern              `
-                       -replacePattern $replacePattern
+        -matchPattern $namespacePattern              `
+        -replacePattern $replacePattern
 
     Update-FileContent -file "$rootProjFolder/App_Start/RouteConfig.cs" `
-                       -matchPattern "(.*url:\s*`"\)({controller\}/\{action\}/\{id\})(`".*)" `
-                       -replacePattern '$1$2/NO_WHERE$3'
+        -matchPattern "(.*url:\s*`")({controller\}/\{action\}/\{id\})(`".*)" `
+        -replacePattern '$1$2/NO_WHERE$3'
 
     #####################################
     # Update Global.asax Namespace
@@ -951,33 +915,33 @@ Function Update-CS-files($vsProjFile) {
     #    Sitecore.Web.Application
     #
     Update-FileContent -file "$rootProjFolder\global.asax.cs"  `
-                       -matchPattern $namespacePattern  `
-                       -replacePattern $replacePattern
+        -matchPattern $namespacePattern  `
+        -replacePattern $replacePattern
 
     Update-FileContent -file "$rootProjFolder\global.asax.cs"                           `
-                       -matchPattern "(class\s+Global\s*:\s*)(HttpApplication)(\s*$)" `
-                       -replacePattern "`$1Sitecore.Web.Application`$3"
-					   
+        -matchPattern "(class\s+Global\s*:\s*)(HttpApplication)(\s*$)" `
+        -replacePattern "`$1Sitecore.Web.Application`$3"
+                       
 } # Update-CS-files
 
 
 ################################################################################
-# Get-PsScriptPath()
+# Get-PsScriptFolder()
 # 
 # Purpose: Get the full path to current running PowerScript file.
-#           $PSScriptRoot is not available prior to powershell 3
+#           $PSScriptRoot is not available prior to PowerShell 3
 #
 # Param:   N/A
 # 
 # Return:  Full path to current PowserShell path
 #
-function Get-PsScriptPath {
+function Get-PsScriptFolder {
 
     # $PSScriptRoot is not available everywhere
     # return split-path -parent $MyInvocation.MyCommand.Definition
     return Split-Path -Parent $PSCommandPath
     
-} # Get-PsScriptPath()
+} # Get-PsScriptFolder()
 
 
 ################################################################################
@@ -1005,9 +969,9 @@ function Get-PsScriptPath {
 #
 function Find-VisualStudioTemplateProjectWithInPsFolder($index) {
 
-    $local:scriptPath = Get-PsScriptPath
+    $local:scriptPath = Get-PsScriptFolder
     
-    $startFolder = $scriptPath #$scriptPath.Substring(0, $scriptPath.LastIndexOf("\") )
+    $startFolder = $scriptPath 
     
     $local:vsProjFiles = (Get-ChildItem -Directory -Path $startFolder | 
         Where-Object {
@@ -1052,7 +1016,8 @@ function Find-VisualStudioTemplateProjectWithInPsFolder($index) {
 #
 # Result: Extracted achive
 #
-# source: http://www.howtogeek.com/tips/how-to-extract-zip-files-using-powershell
+# Reference: 
+#    http://www.howtogeek.com/tips/how-to-extract-zip-files-using-powershell
 #
 function Expand-ZIPFile($zipSourceFile, $destination) {
 
@@ -1072,15 +1037,19 @@ function Expand-ZIPFile($zipSourceFile, $destination) {
 ################################################################################
 # Get-XmlNode()
 #
-# Referece: 
-#           http://blog.danskingdom.com/tag/selectsinglenode/
-#           http://stackoverflow.com/questions/1766254/selectsinglenode-always-returns-null
+# Reference: 
+#    http://blog.danskingdom.com/tag/selectsinglenode/
+#    http://stackoverflow.com/questions/1766254/selectsinglenode-always-returns-null
 #
 function Get-XmlNode([System.Xml.XmlDocument]$XmlDocument, 
                      [string]$NodePath, 
                      [string]$NamespaceURI = "", 
                      [string]$NodeSeparatorCharacter = '.') {
-    $local:nodes = Get-XmlNodes $XmlDocument $NodePath $NamespaceURI $NodeSeparatorCharacter
+
+    $local:nodes = Get-XmlNodes -XmlDocument $XmlDocument `
+          -NodePath $NodePath         `
+          -NamespaceUri $NamespaceURI `
+          -NodeSeparatorCharacter $NodeSeparatorCharacter
     
     if ($nodes -is [System.Array]) {
         return $nodes[0]
@@ -1116,7 +1085,7 @@ function Get-XmlNodes([System.Xml.XmlDocument]$XmlDocument,
         SelectNodes($fullyQualifiedNodePath, $xmlNsManager)
         
     return $node
-	
+    
 } # Get-XmlNodes
 
 
@@ -1199,8 +1168,8 @@ function Add-SolutionFiles($vsTemplateFolder, $vsTargetProjFilePath) {
     
     #####################################
     # Update Solution file
-	Update-FileContent -file $dstSolutionFile `
-		-matchPattern "(Project.*FAE04EC0-301F-11D3-BF4B-00C04F79EFBC.*)([\w\d\-_ ]*Template[\w\d\-_ ]*)(.*)\2(.*)\2(\.csproj.*)" `
+    Update-FileContent -file $dstSolutionFile `
+        -matchPattern "(Project.*FAE04EC0-301F-11D3-BF4B-00C04F79EFBC.*)([\w\d\-_ ]*Template[\w\d\-_ ]*)(.*)\2(.*)\2(\.csproj.*)" `
         -replacePattern "`$1$projectName`$3$projectName`$4$projectName`$5" `
 
 } # Add-SolutionFiles
@@ -1360,9 +1329,9 @@ Function Add-ReferenceToVsProject ($vsProjFile, $referencePath) {
         $local:xml = new-object System.Xml.XmlDocument
         $xml.load($vsProjFile)
         
-		$local:fileName = $referencePath.SubString(
-			$referencePath.replace("/", "\").LastIndexOf("\") +1)
-			
+        $local:fileName = $referencePath.SubString(
+            $referencePath.replace("/", "\").LastIndexOf("\") +1)
+            
         $local:hasReference = (
             Get-XmlNode -XmlDocument $xml            `
             -NodePath "/Project/ItemGroup/Reference/HintPath" `
@@ -1373,19 +1342,19 @@ Function Add-ReferenceToVsProject ($vsProjFile, $referencePath) {
             return
         }
         
-		$referenceNode = (
+        $referenceNode = (
             Get-XmlNode -XmlDocument $xml            `
             -NodePath "/Project/ItemGroup/Reference" `
             -NodeSeparatorCharacter "/")
-			
-		$referenceNode = $referenceNode.ParentNode.InsertBefore(
-			$xml.CreateElement("Reference", $xml.Project.xmlns),
-			$referenceNode)
-		
+            
+        $referenceNode = $referenceNode.ParentNode.InsertBefore(
+            $xml.CreateElement("Reference", $xml.Project.xmlns),
+            $referenceNode)
+        
         $referenceNode.SetAttribute("Include", "Sitecore.Kernel")
-		
+        
         $referenceNode.InnerXML = @"
-            `n	
+            `n    
             <HintPath>$referencePath</HintPath>
             <SpecificVersion>False</SpecificVersion>
             <Private>False</Private>
@@ -1431,7 +1400,7 @@ function New-VsScProj {
     $vsTemplateFolder = $vsTemplateFolder -replace "[`"']"
     $vsTargetFolder = $vsTargetFolder -replace "[`"']"
 
-    $local:scriptPath = Get-PsScriptPath
+    $local:scriptPath = Get-PsScriptFolder
     # Look for VS project template within the current folder if non-specified
     if ([string]::IsNullOrWhiteSpace($vsTargetFolder) `
         -or (Get-ChildItem -Path $vsTargetFolder -ErrorAction Ignore | 
@@ -1577,9 +1546,9 @@ function New-VsScProj {
         
         
         Update-CS-files -vsProjFile $vsProjFile
-		
-		Add-ReferenceToVsProject -vsProjFile $vsProjFile `
-			-referencePath "./bin/Sitecore.Kernel.dll"
+        
+        Add-ReferenceToVsProject -vsProjFile $vsProjFile `
+            -referencePath "./bin/Sitecore.Kernel.dll"
         
         #####################################
         # Add empty folders to FileSystem 
