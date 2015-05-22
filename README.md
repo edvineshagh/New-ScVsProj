@@ -45,3 +45,6 @@ Below outlines the script usage and parameters.  If no parameters are specified,
                -overwriteExistingFiles $true
 
 As mentioned earlier, you need to add Sitecore license.xml into /App_Data folder within Visual Studio.  You can avoid this manual step by adding the license.xml file into the template source (as specified in -vsTEmplateFolder parameter) so that it is automatically added for you.
+
+##Resources##
+I blogged about deploying to Azure website service in <a href="http://www.sitecore.net/learn/blogs/technical-blogs/edvin-eshagh/posts/2015/03/deploying-sitecore-8-on-azure-website.aspx">Deploying Sitecore On Azure Website</a>
