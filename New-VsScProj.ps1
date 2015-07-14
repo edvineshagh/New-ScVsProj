@@ -1451,7 +1451,13 @@ function New-VsScProj {
         
         Expand-ZIPFile $source $targetZipFolder
         
-        $scRootFolder = $targetZipFolder
+        $scRootFolder = Get-ChildItem -Path $targetZipFolder -ErrorAction ignore `
+            | Where-Object {$_.PSIsContainer}    `
+            | Select-Object -Last 1 -ExpandProperty FullName
+
+        if ([string]::IsNullOrWhiteSpace($scRootFolder)) {
+            $scRootFolder = $targetZipFolder
+        }
     }
     
     #####################################
